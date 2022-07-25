@@ -3,5 +3,14 @@
     "java.project.outputPath": "bin",
     "java.project.referencedLibraries": [
         "lib/**/*.jar"
+    ],
+    "cSpell.ignoreWords": [
+        "Conteudos",
+        "IMDB",
+        "TOPZERA",
+        "conteudo",
+        "conteudos",
+        "endereco",
+        "saida"
     ]
 }

@@ -1,40 +1,59 @@
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
-import java.util.Map;
 
 public class App {
     public static void main(String[] args) throws Exception {
-        // fazer uma conexão http e buscar os top 250 filmes
-        String url = "https://alura-filmes.herokuapp.com/conteudos";
-        URI endereco = URI.create(url);
-        var client = HttpClient.newHttpClient();
-        var request = HttpRequest.newBuilder(endereco).GET().build();
-        HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
-        String body = response.body();
-        var parser = new JsonParser();
+        String urlNasa = "https://api.mocki.io/v2/549a5d8b/NASA-APOD-JamesWebbSpaceTelescope";
+        String urlIMDB = "https://api.mocki.io/v2/549a5d8b/Top250Movies";
 
-        // extrair só os dados que interessam (titulo, poster, classificação)
-        List<Map<String, String>> listaDeFilmes = parser.parse(body);
-        
-        // exibir e manipular os dados
-        for (Map<String,String> filme : listaDeFilmes) {
-            String urlImagem = filme.get("image");
-            String titulo = filme.get("title");
+        buildGeradoraImagemIMDB(urlIMDB);
+        buildGeradoraImagemNasa(urlNasa);
+    }
 
-            InputStream inputStream = new URL(urlImagem).openStream();
-            String nomeArquivo = titulo+".png";
+    public static void buildGeradoraImagemIMDB(String url) throws Exception{
+        var http = new ClienteHttp();
+        String json = http.buscaDados(url);
 
-            var geradora = new GeradoraDeFigurinhas();
-            geradora.cria(inputStream, nomeArquivo);
+        ExtratorDeConteudo extrator= new ExtratorDeConteudoDoIMDB();
+        List<Conteudo> conteudos = extrator.extraiConteudos(json);
 
-            System.out.println(titulo);
-            System.out.println();
-        }
+        for (int i = 0; i < 3; i++) {
+            Conteudo conteudo = conteudos.get(i);
+
+            InputStream inputStream = new URL(conteudo.getUrlImagem()).openStream();
+
+             String nomeArquivo = "assets/img/saida/"+conteudo.getTitulo()+".png";
+            
+             var geradora = new GeradoraDeFigurinhas();
+
+             geradora.cria(inputStream, nomeArquivo);
+
+             System.out.println(conteudo.getTitulo());
+             System.out.println();
+         }
+    }
+
+    public static void buildGeradoraImagemNasa(String url) throws Exception{
+        var http = new ClienteHttp();
+        String json = http.buscaDados(url);
+
+        ExtratorDeConteudo extrator= new ExtratorDeConteudoDaNasa();
+        List<Conteudo> conteudos = extrator.extraiConteudos(json);
+
+        for (int i = 0; i < 3; i++) {
+            Conteudo conteudo = conteudos.get(i);
+            
+            InputStream inputStream = new URL(conteudo.getUrlImagem()).openStream();
+
+             String nomeArquivo = "assets/img/saida/"+conteudo.getTitulo()+".png";
+            
+             var geradora = new GeradoraDeFigurinhas();
+
+             geradora.cria(inputStream, nomeArquivo);
+
+             System.out.println(conteudo.getTitulo());
+             System.out.println();
+         }
     }
 }
